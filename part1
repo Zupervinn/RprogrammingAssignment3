@@ -1,0 +1,11 @@
+## part 1
+## lowest 30 death rate
+
+
+library(dplyr)
+
+best <- function(state, outcome){
+        read_file <- read.csv("outcome-of-care-measures.csv", colClasses = "character" )
+        state <- select(outcome, State, contains(state)) ##selecting state by name
+        30days <- select(outcome, matches(""))
+}
