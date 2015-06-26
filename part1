@@ -5,9 +5,11 @@
 library(dplyr)
 
 best <- function(state, outcome){
-        read_file <- read.csv("outcome-of-care-measures.csv", colClasses = "character" )
-        state <- select(outcome, State, contains(state)) ##selecting state by name
-        30days <- select(outcome, matches(""))
+        read_file<- read.csv("outcome-of-care-measures.csv", colClasses = "character", na.string ="Not Availablee", stringsAsFactors = FALSE )
+        x <- filter(read_file, State==state)
+        y <- select(x, contains(outcome))
+        return(x)
+}
 }
 
 }
