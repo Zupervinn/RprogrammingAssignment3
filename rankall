@@ -1,1 +1,63 @@
 
+library(dplyr)
+
+
+rankall <- function (outcome, num = "best"){
+        data <- read.csv("outcome-of-care-measures.csv", na.string ="Not Available", stringsAsFactors = FALSE )
+        selectdata<-(select(data, State, Hospital.Name, Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack, Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure, Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia ))
+        colnames(selectdata)[colnames(selectdata) == 'Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack'] <- 'heart attack'
+        colnames(selectdata)[colnames(selectdata) == 'Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure'] <- 'heart failure'
+        colnames(selectdata)[colnames(selectdata) == 'Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia'] <- 'pneumonia'
+        
+        list('heart attack'=3, 'heart failure'= 4, 'pneumonia'=5)
+        selectdata<- na.omit(selectdata)
+        
+        listnames<- names(selectdata)
+        testoutcomevalid<- outcome %in% listnames
+        
+        if(testoutcomevalid == "FALSE") {stop("invalid outcome")}
+        else{
+                colnames(selectdata)[colnames(selectdata) == 'Hospital.Name'] <- 'hospital'
+                colnames(selectdata)[colnames(selectdata) == 'State'] <- 'state'
+                orderdata <- selectdata[order(selectdata[,outcome], selectdata[,"hospital"]),]
+                
+                
+                if(num == "best"){
+                        num <- 1
+                        eachstate<- function(x){slice(filter(orderdata, state==x), num)} #function finding state given num
+                        distinctstate <- distinct(select(orderdata, state))
+                        looping <- apply(distinctstate, 1 , eachstate)
+                        df<- do.call(rbind.data.frame, looping)
+                        trans <- transmute(df, hospital= hospital, state=state)
+                        return(arrange(trans, state))
+                }
+                
+                if(num == "worst"){
+                        num <- 1
+                        descorderdata <- selectdata[order(selectdata[,outcome], selectdata[,"hospital"], decreasing = TRUE),]
+                        eachstate<- function(x){slice(filter(descorderdata, state==x),num)} #function finding state given num
+                        distinctstate <- distinct(select(descorderdata, state))
+                        looping <- apply(distinctstate, 1 , eachstate)
+                        df<- do.call(rbind.data.frame, looping)
+                        trans <- transmute(df, hospital= hospital, state=state)
+                        return(arrange(trans, state))
+                }
+                
+                else{
+                        
+                        distinctstate <- distinct(select(orderdata, state)) 
+                        eachstate<- function(x){slice(filter(orderdata, state==x),num)} #function finding state given num
+                        looping <- apply(distinctstate, 1 , eachstate)
+                        df<- do.call(rbind.data.frame, looping)
+                        trans <- transmute(df, hospital= hospital, state=state)
+                        return(arrange(trans, state))
+                        
+                        
+                        
+                        
+                        
+                }
+                
+                
+        }
+}
